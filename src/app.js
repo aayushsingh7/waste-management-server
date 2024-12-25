@@ -5,6 +5,9 @@ import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import connectToDB from "./database/connection.js";
+import userRouter from "./routes/userRoutes.js";
+import productRouter from "./routes/productRoutes.js";
+import rewardRouter from "./routes/rewardRoutes.js";
 
 dotenv.config();
 connectToDB();
@@ -13,6 +16,9 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: true }));
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/reward", rewardRouter);
 const httpServer = createServer(app);
 const userSockets = new Map();
 const io = new Server(httpServer, {

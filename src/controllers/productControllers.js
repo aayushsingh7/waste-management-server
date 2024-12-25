@@ -1,6 +1,6 @@
 import { startSession } from "mongoose";
-import Product from "../database/models/productModel";
-import User from "../database/models/userModel";
+import Product from "../database/models/productModel.js";
+import User from "../database/models/userModel.js";
 
 export const getProduct = async (req, res) => {
   const { productId, buyerId, sellerId } = req.query;
@@ -118,5 +118,33 @@ export const buyProduct = async (req, res) => {
     res.status(500).send({ success: false, message: err.message });
   } finally {
     session.endSession();
+  }
+};
+
+export const editProduct = async (req, res) => {
+  const { productId, newData } = req.body;
+  try {
+    const product = await Product.findOneAndUpdate(
+      { _id: productId },
+      {
+        $set: newData,
+      },
+      { new: true }
+    );
+    if (product.acknowledged) {
+      res.status(200).send({
+        success: true,
+        message: "Product edited successfully",
+        data: reward,
+      });
+    } else {
+      res.status(400).send({
+        success: false,
+        message: "Bad Request! cannot edit product at this moment",
+      });
+    }
+  } catch (err) {
+    console.log({ err });
+    res.status(500).send({ success: false, message: err.message });
   }
 };

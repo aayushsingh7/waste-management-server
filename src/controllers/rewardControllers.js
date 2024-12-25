@@ -1,4 +1,18 @@
-import Reward from "../database/models/rewardModel";
+import Reward from "../database/models/rewardModel.js";
+
+export const fetchRewards = async (req, res) => {
+  try {
+    const rewards = await Reward.find();
+    return res.status({
+      success: true,
+      message: "Reward fetched successfully",
+      data: rewards,
+    });
+  } catch (err) {
+    console.log({ err });
+    res.status(500).send({ success: false, message: err.message });
+  }
+};
 
 export const createdReward = async (req, res) => {
   const { image, rewardType, coinsRequired, rewardValue, status } = req.body;
@@ -15,7 +29,7 @@ export const createdReward = async (req, res) => {
       res.status(201).send({
         success: true,
         message: "New reward created successfully",
-        reward,
+        data: reward,
       });
     } else {
       res.status(400).send({
@@ -40,9 +54,11 @@ export const editReward = async (req, res) => {
       { new: true }
     );
     if (reward.acknowledged) {
-      res
-        .status(200)
-        .send({ success: true, message: "Reward edited successfully", reward });
+      res.status(200).send({
+        success: true,
+        message: "Reward edited successfully",
+        data: reward,
+      });
     } else {
       res.status(400).send({
         success: false,

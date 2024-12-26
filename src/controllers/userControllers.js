@@ -1,6 +1,6 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import User from "../models/userModel.js";
+import User from "../database/models/userModel.js";
 
 const hashPassword = async (plainPassword) => {
   const saltRounds = 10;

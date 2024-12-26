@@ -15,6 +15,17 @@ const userSchema = new Schema(
     rewards: [{ type: Schema.Types.ObjectId, ref: "reward" }],
     location: { type: String, default: "" },
     phoneNo: { type: String, required: true },
+    transactionHistry: [
+      {
+        product: {
+          type: Schema.Types.ObjectId,
+          ref: "product",
+        },
+        soldOn: { type: Date },
+        coinsRecieved: { type: Number, default: 0 },
+        buyer: { type: Schema.Types.ObjectId, ref: "user" },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -2,28 +2,66 @@ import { startSession } from "mongoose";
 import Product from "../database/models/productModel.js";
 import User from "../database/models/userModel.js";
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Earth's radius in kilometers
+
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in kilometers
+
+  return distance;
+}
+
 export const getProduct = async (req, res) => {
-  const { productId, buyerId, sellerId } = req.query;
+  const { productId, buyerId, sellerId, status } = req.query;
   let products;
   try {
     if (productId) {
-      products = await Product.findOne({ _id: productId });
-    } else if (sellerId) {
-      products = await Product.find({ seller: sellerId });
-    } else if (buyerId) {
-      products = await Product.find({ buyer: buyerId });
-    } else if (status) {
+      products = await Product.findOne({ _id: productId })
+        .populate({
+          path: "seller",
+          select: "phoneNo _id username",
+        })
+        .populate({ path: "buyer", select: "phoneNo username" });
+    } else if ((status && sellerId) || (status && buyerId)) {
       products = await Product.find(
         sellerId && status
           ? { status, seller: sellerId }
           : { status, buyer: buyerId }
-      );
+      )
+        .populate({
+          path: "seller",
+          select: "phoneNo _id username",
+        })
+        .populate({ path: "buyer", select: "phoneNo username" });
+    } else if (sellerId) {
+      products = await Product.find({ seller: sellerId })
+        .populate({
+          path: "seller",
+          select: "phoneNo _id username",
+        })
+        .populate({ path: "buyer", select: "phoneNo username" });
+    } else if (buyerId) {
+      products = await Product.find({ buyer: buyerId })
+        .populate({
+          path: "seller",
+          select: "phoneNo _id username",
+        })
+        .populate({ path: "buyer", select: "phoneNo username" });
     } else {
       return res
         .status(400)
         .send({ success: false, message: "Invalid search query" });
     }
-
     res.status(200).send({
       success: true,
       message: "Products fetched successfully",
@@ -36,20 +74,38 @@ export const getProduct = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { seller, name, location, expectedPrice, description, image, items } =
+  const { seller, name, locationTxt, location, description, image, items } =
     req.body;
   try {
+    let buyers = await User.find({ role: "buyer" });
+    const buyersWithDistance = buyers.map((buyer) => ({
+      _id: buyer._id,
+      distance: calculateDistance(
+        location.latitude,
+        location.longitude,
+        buyer.location.latitude,
+        buyer.location.longitude
+      ),
+    }));
+
+    buyersWithDistance.sort((a, b) => a.distance - b.distance);
+    const nearestBuyer = buyersWithDistance[0];
     const newProduct = new Product({
-      seller,
+      seller: seller,
+      buyer: nearestBuyer._id,
+      location: JSON.parse(location),
       name,
-      location,
+      locationTxt,
       description,
       image,
       items: JSON.parse(items),
-      expectedPrice: parseInt(expectedPrice),
     });
 
-    await newProduct.save();
+    await (
+      await (
+        await newProduct.save()
+      ).populate({ path: "seller", select: "username phoneNo locationTxt" })
+    ).populate({ path: "buyer", select: "username phoneNo" });
     if (newProduct) {
       res.status(201).send({
         success: true,
@@ -89,7 +145,7 @@ export const deleteProduct = async (req, res) => {
 };
 
 export const buyProduct = async (req, res) => {
-  const { buyerId, productId, sellerId, finalPrice } = req.query;
+  const { productId, sellerId, finalPrice } = req.query;
   let coinValue = 0;
 
   const session = await startSession();
@@ -98,11 +154,11 @@ export const buyProduct = async (req, res) => {
   try {
     await Product.updateOne(
       { _id: productId },
-      { $set: { buyer: buyerId, finalPrice: finalPrice } },
+      { $set: { status: "completed", finalPrice: finalPrice } },
       { session }
     );
 
-    coinValue = Math.max(Math.floor(finalPrice * (5 / 100) * 100), 10);
+    coinValue = finalPrice * 0.05;
 
     await User.updateOne(
       { _id: sellerId },

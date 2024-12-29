@@ -13,8 +13,12 @@ const userSchema = new Schema(
     items: [{ type: Schema.Types.ObjectId, ref: "product" }],
     coins: { type: Number, default: 0 },
     rewards: [{ type: Schema.Types.ObjectId, ref: "reward" }],
-    location: { type: String, default: "" },
-    phoneNo: { type: String, required: true },
+    location: {
+      latitude: { type: Number },
+      longitude: { type: Number },
+    },
+    locationTxt: { type: String, default: "" },
+    phoneNo: { type: Number, required: true },
     transactionHistry: [
       {
         product: {

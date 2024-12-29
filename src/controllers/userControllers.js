@@ -56,7 +56,8 @@ export const login = async (req, res, next) => {
 };
 
 export const register = async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { username, email, password, role, phoneNo, location, locationTxt } =
+    req.body;
   try {
     let isEmailExists = await User.findOne({ email });
     if (isEmailExists) {
@@ -68,9 +69,13 @@ export const register = async (req, res, next) => {
 
     let hashedPassword = await hashPassword(password);
     let newUser = new User({
-      name,
+      username,
+      role,
+      phoneNo,
       email,
       password: hashedPassword,
+      location,
+      locationTxt,
     });
 
     const user = await newUser.save();

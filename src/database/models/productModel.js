@@ -4,16 +4,20 @@ const productSchema = new Schema(
   {
     status: {
       type: String,
-      enum: ["completed", "ongoing", "reposted", "returned", "accepted"],
-      default: "ongoing",
+      enum: ["completed", "pending", "reposted", "cancelled"],
+      default: "pending",
     },
     seller: { type: Schema.Types.ObjectId, ref: "user" },
     finalPrice: { type: Number, default: 0 },
     buyer: { type: Schema.Types.ObjectId, ref: "user", default: null },
-    name: { type: String, required: true },
-    location: { type: String, required: true },
+    name: { type: String, default: null },
+    location: {
+      latitude: { type: Number },
+      longitude: { type: Number },
+    },
+    locationTxt: { type: String, required: true },
     expectedPrice: { type: Number, default: 0 },
-    description: { type: String },
+    description: { type: String, default: null },
     image: {
       type: String,
       default:
@@ -22,7 +26,7 @@ const productSchema = new Schema(
     items: [
       {
         name: { type: String },
-        qty: { type: Number, default: 0 },
+        qty: { type: String, default: "0" },
         price: { type: Number, default: 0 },
       },
     ],

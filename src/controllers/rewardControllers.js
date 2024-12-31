@@ -3,21 +3,22 @@ import Reward from "../database/models/rewardModel.js";
 export const fetchRewards = async (req, res) => {
   try {
     const rewards = await Reward.find();
-    return res.status({
+    res.status(200).send({
       success: true,
       message: "Reward fetched successfully",
       data: rewards,
     });
   } catch (err) {
-    console.log({ err });
     res.status(500).send({ success: false, message: err.message });
   }
 };
 
 export const createdReward = async (req, res) => {
-  const { image, rewardType, coinsRequired, rewardValue, status } = req.body;
+  const { image, rewardType, coinsRequired, rewardValue, status, title } =
+    req.body;
   try {
     const reward = new Reward({
+      title,
       image,
       rewardType,
       coinsRequired: parseInt(coinsRequired),
@@ -38,7 +39,6 @@ export const createdReward = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log({ err });
     res.status(500).send({ success: false, message: err.message });
   }
 };
@@ -66,7 +66,6 @@ export const editReward = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log({ err });
     res.status(500).send({ success: false, message: err.message });
   }
 };
@@ -86,7 +85,6 @@ export const deleteReward = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log({ err });
     res.status(500).send({ success: false, message: err.message });
   }
 };

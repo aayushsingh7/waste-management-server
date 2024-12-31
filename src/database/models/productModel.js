@@ -8,6 +8,7 @@ const productSchema = new Schema(
       default: "pending",
     },
     seller: { type: Schema.Types.ObjectId, ref: "user" },
+    rejectedByBuyerId: [{ type: Schema.Types.ObjectId, ref: "user" }],
     finalPrice: { type: Number, default: 0 },
     buyer: { type: Schema.Types.ObjectId, ref: "user", default: null },
     name: { type: String, default: null },

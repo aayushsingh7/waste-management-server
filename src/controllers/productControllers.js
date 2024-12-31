@@ -29,9 +29,12 @@ export const getProduct = async (req, res) => {
       products = await Product.findOne({ _id: productId })
         .populate({
           path: "seller",
-          select: "phoneNo _id username",
+          select: "phoneNo _id username locationTxt",
         })
-        .populate({ path: "buyer", select: "phoneNo username" });
+        .populate({
+          path: "buyer",
+          select: "_id phoneNo username locationTxt",
+        });
     } else if ((status && sellerId) || (status && buyerId)) {
       products = await Product.find(
         sellerId && status
@@ -40,9 +43,12 @@ export const getProduct = async (req, res) => {
       )
         .populate({
           path: "seller",
-          select: "phoneNo _id username",
+          select: "phoneNo _id username locationTxt",
         })
-        .populate({ path: "buyer", select: "phoneNo username" });
+        .populate({
+          path: "buyer",
+          select: "_id phoneNo username locationTxt",
+        });
     } else if (sellerId) {
       products = await Product.find({ seller: sellerId })
         .populate({
@@ -68,7 +74,6 @@ export const getProduct = async (req, res) => {
       products: products,
     });
   } catch (err) {
-    console.log(err);
     res.status({ success: false, message: err.message });
   }
 };
@@ -119,8 +124,90 @@ export const createProduct = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
     res.status({ success: false, message: err.message });
+  }
+};
+
+export const cancleProduct = async (req, res) => {
+  try {
+    const { buyerId, productId } = req.query;
+    const productUpdate = await Product.updateOne(
+      { _id: productId },
+      {
+        $set: { buyer: null, status: "pending" },
+        $push: { rejectedByBuyerId: buyerId },
+      }
+    );
+
+    const product = await Product.findOne({ _id: productId }).populate({
+      path: "seller",
+      select: "location",
+    });
+    // assign new buyer
+    let data = await fetch(`${process.env.API_URL}/products/new-buyer`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        sellerLocation: product.seller.location,
+        productId: productId,
+      }),
+    });
+    let updatedProduct = await data.json();
+    res.status(200).send({
+      success: true,
+      message: "Request Cancled",
+      response: updatedProduct,
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .send({ success: false, message: "Oops! something went wrong" });
+  }
+};
+
+export const assignNewBuyer = async (req, res) => {
+  const { sellerLocation, productId } = req.body;
+  try {
+    const product = await Product.findOne({ _id: productId });
+    let buyers = await User.find({
+      role: "buyer",
+      _id: { $nin: product.rejectedByBuyerId }, // Find buyers whose _id is NOT IN rejectedByBuyerId array
+    });
+    const buyersWithDistance = buyers.map((buyer) => ({
+      _id: buyer._id,
+      distance: calculateDistance(
+        sellerLocation.latitude,
+        sellerLocation.longitude,
+        buyer.location.latitude,
+        buyer.location.longitude
+      ),
+    }));
+
+    buyersWithDistance.sort((a, b) => a.distance - b.distance);
+    const nearestBuyer = buyersWithDistance[0];
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: productId },
+      { $set: { buyer: nearestBuyer } },
+      { new: true }
+    )
+      .populate({
+        path: "seller",
+        select: "phoneNo _id username locationTxt",
+      })
+      .populate({
+        path: "buyer",
+        select: "_id phoneNo username locationTxt",
+      });
+    res.status(200).send({
+      success: true,
+      message: "New buyer assigned successfully",
+      product: updatedProduct,
+    });
+  } catch (err) {
+    res
+      .status(500)
+      .send({ success: false, message: "Oops! something went wrong" });
   }
 };
 
@@ -139,7 +226,6 @@ export const deleteProduct = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
     res.status({ success: false, message: err.message });
   }
 };
@@ -170,7 +256,6 @@ export const buyProduct = async (req, res) => {
     res.status(200).send({ success: true, message: "Transaction successfull" });
   } catch (err) {
     await session.abortTransaction();
-    console.log(err);
     res.status(500).send({ success: false, message: err.message });
   } finally {
     session.endSession();
@@ -200,7 +285,6 @@ export const editProduct = async (req, res) => {
       });
     }
   } catch (err) {
-    console.log({ err });
     res.status(500).send({ success: false, message: err.message });
   }
 };

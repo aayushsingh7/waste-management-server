@@ -1,7 +1,9 @@
 import { Router } from "express";
 const productRouter = Router();
 import {
+  assignNewBuyer,
   buyProduct,
+  cancleProduct,
   createProduct,
   deleteProduct,
   editProduct,
@@ -13,5 +15,7 @@ productRouter.post("/create", createProduct);
 productRouter.put("/edit", editProduct);
 productRouter.put("/buy", buyProduct);
 productRouter.delete("/delete", deleteProduct);
+productRouter.put("/cancle", cancleProduct);
+productRouter.put("/new-buyer", assignNewBuyer);
 
 export default productRouter;

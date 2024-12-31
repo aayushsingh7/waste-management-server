@@ -1,13 +1,13 @@
-import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import connectToDB from "./database/connection.js";
-import userRouter from "./routes/userRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import rewardRouter from "./routes/rewardRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 
 dotenv.config();
 connectToDB();
@@ -32,7 +32,6 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   socket.on("user_connect", (userId) => {
     userSockets.set(userId, socket.id);
-    console.log({ userSockets });
   });
 
   socket.on("new_request", (product, [sellerId, buyerId]) => {
@@ -63,7 +62,6 @@ io.on("connection", (socket) => {
     for (const [userId, socketId] of userSockets.entries()) {
       if (socketId === socket.id) {
         userSockets.delete(userId);
-        console.log("user disccounted", userId);
         break;
       }
     }

@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 
 const rewardSchema = new Schema(
   {
+    title:{type:String,required:true},
     image: {
       type: String,
       required: true,
@@ -19,7 +20,7 @@ const rewardSchema = new Schema(
     rewardCurrency: {
       type: String,
       enum: ["USD", "HKD"],
-      default: "HKD",
+      default: "USD",
     },
     status: {
       type: String,

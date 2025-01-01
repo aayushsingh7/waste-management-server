@@ -9,9 +9,10 @@ import {
   editProduct,
   getProduct,
 } from "../controllers/productControllers.js";
+import uploadImage from "../middleware/uploadImage.js";
 
 productRouter.get("/", getProduct);
-productRouter.post("/create", createProduct);
+productRouter.post("/create", uploadImage, createProduct);
 productRouter.put("/edit", editProduct);
 productRouter.put("/buy", buyProduct);
 productRouter.delete("/delete", deleteProduct);

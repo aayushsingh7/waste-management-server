@@ -79,8 +79,15 @@ export const getProduct = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { seller, name, locationTxt, location, description, image, items } =
-    req.body;
+  const {
+    seller,
+    name,
+    locationTxt,
+    location,
+    description,
+    cloudinaryImage,
+    items,
+  } = req.body;
   try {
     let buyers = await User.find({ role: "buyer" });
     const buyersWithDistance = buyers.map((buyer) => ({
@@ -102,7 +109,7 @@ export const createProduct = async (req, res) => {
       name,
       locationTxt,
       description,
-      image,
+      image: cloudinaryImage,
       items: JSON.parse(items),
     });
 

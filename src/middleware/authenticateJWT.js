@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.trial;
+  const token = req.cookies.earnmore;
 
   if (!token) {
     return res.status(403).send("Access denied.");

@@ -35,7 +35,7 @@ export const login = async (req, res, next) => {
     if (isValidPassword) {
       let token = generateJWTToken(user._id);
       res
-        .cookie("trial", token, {
+        .cookie("earnmore", token, {
           sameSite: "none",
           httpOnly: true,
           secure: true,
@@ -82,7 +82,7 @@ export const register = async (req, res, next) => {
 
     let token = generateJWTToken(newUser._id);
     res
-      .cookie("trial", token, {
+      .cookie("earnmore", token, {
         sameSite: "none",
         httpOnly: true,
         secure: true,
@@ -113,7 +113,7 @@ export const authenticateUser = async (req, res, next) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("trial");
+    res.clearCookie("earnmore");
     res
       .status(200)
       .send({ success: true, message: "User logout successfully" });

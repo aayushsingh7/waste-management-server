@@ -22,7 +22,7 @@ connectToDB();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true, origin: true }));
+app.use(cors({ credentials: true, origin: ["https://earn-more.netlify.app"] }));
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/products", productRouter);
 app.use("/api/v1/rewards", rewardRouter);
@@ -30,7 +30,7 @@ const httpServer = createServer(app);
 const userSockets = new Map();
 const io = new Server(httpServer, {
   cors: {
-    origin: true,
+    origin: ["https://earn-more.netlify.app"],
     credentials: true,
   },
 });

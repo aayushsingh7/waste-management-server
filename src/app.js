@@ -20,7 +20,7 @@ cloudinary.v2.config({
 connectToDB();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: ["https://earn-more.netlify.app"] }));
 app.use("/api/v1/users", userRouter);

@@ -1,5 +1,8 @@
 # Waste Management Server
 
+### ⚜ [Waste Management Client Github Repository](https://github.com/aayushsingh7/waste-management-client.git)
+
+
 ## Prerequisites
 
 Before you begin, ensure you have the following installed on your system:
